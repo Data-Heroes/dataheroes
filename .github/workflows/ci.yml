@@ -26,4 +26,6 @@ jobs:
       - run: pip install mkdocstrings-python
       - run: pip install mkdocs-callouts
       - run: pip install markdown-exec
+      - run: pip install mkdocs-section-index
+      - run: pip install markdown-callouts
       - run: mkdocs gh-deploy --force
