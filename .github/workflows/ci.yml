@@ -15,4 +15,15 @@ jobs:
         with:
           python-version: 3.x
       - run: pip install mkdocs-material
+      - run: pip install mkdocs
+      - run: pip install mkdocs-autorefs
+      - run: pip install mkdocs-coverage
+      - run: pip install mkdocs-gen-files
+      - run: pip install mkdocs-include-dir-to-nav
+      - run: pip install mkdocs-literate-nav
+      - run: pip install mkdocs-material
+      - run: pip install mkdocs-material-extentions
+      - run: pip install mkdocs-selection-index
+      - run: pip install mkdocstrings
+      - run: pip install mkdocstrings-python
       - run: mkdocs gh-deploy --force
