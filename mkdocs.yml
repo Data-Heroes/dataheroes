@@ -3,7 +3,6 @@ site_description: "DataHeroes Coreset Library"
 site_url: "https://data-heroes.github.io/dataheroes/"
 site_dir: "site"
 repo_url: "https://github.com/Data-Heroes/dataheroes"
-repo_name: "DataHeroes"
 watch: [skcoreset, examples]
 
 nav:
