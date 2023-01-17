@@ -1,3 +1,0 @@
-# dataheroes
-
-Home page
