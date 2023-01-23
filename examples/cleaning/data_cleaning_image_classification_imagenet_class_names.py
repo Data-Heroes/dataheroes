@@ -1,4 +1,5 @@
 # ImageNet-1K classes to human readable labels
+# Source: https://gist.github.com/yrevar/942d3a0ac09ec9e5eb3a
 imagenet1k_class_names = {
     0: 'tench, Tinca tinca',
     1: 'goldfish, Carassius auratus',
