@@ -2,15 +2,6 @@
 class CoresetTreeService(CoresetServiceBase):
     pass
 
-    def optimized_for(self):
-        pass
-
-    def chunk_size(self):
-        pass
-
-    def max_memory_gb(self):
-        pass
-
     def build_from_file(self, file_path: Union[Union[str, os.PathLike], Iterable[Union[str, os.PathLike]]], target_file_path: Union[Union[str, os.PathLike], Iterable[Union[str, os.PathLike]]]=None, *, reader_f=pd.read_csv, reader_kwargs: dict=None, chunk_size: int=None, coreset_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
         """
         Create a coreset tree based on data taken from local storage.
