@@ -1,10 +1,101 @@
 
 class CoresetTreeService(CoresetServiceBase):
+    """
+        A service class for creating a coreset tree and working with it.
+        optimized_for is a required parameter defining the main usage of the service: 'training' or 'cleaning'.
+        In the 'cleaning' case, a single Coreset is built over the entire dataset.
+        In the 'training' case, the service will decide whether to build an actual Coreset Tree or
+        to build a single Coreset over the entire dataset, based on the quadruplet:
+        n_instances, n_classes, max_memory_gb and the 'number of features' (deduced from the dataset).
+        The chunk_size and coreset_size will be deduced based on the above quadruplet too.
+        In case chunk_size and coreset_size are provided, they will override all above mentioned parameters (less recommended).
+
+        If you intend passing class_weight to your classifier, it is recommended to pass it as a parameter to the class in
+        coreset_params (see example below), so the coreset can be built while taking into account the class_weight.
+        You can continue passing class_weight to your classifier, while retrieving the coreset using the get_coreset method
+        with the parameter inverse_class_weight set to True (default). If you wish to stop passing class_weight to the
+        classifier, retrieve the coreset using the get_coreset method with the parameter inverse_class_weight set to False.
+
+        If you intend passing C (the inverse of regularization strength) to your solver, it should be adjusted as specified
+        here when used on the Coreset: C = C * float(np.sum(weights) / len(X))
+
+        Parameters:
+            data_manager: DataManagerBase subclass, optional
+                The class used to interact with the provided data and store it locally.
+                By default, only the sampled data is stored in HDF5 files format.
+
+            data_params: DataParams, optional
+                Preprocessing information.
+
+                For Example:
+                data_params = {
+                    'target': {'name': 'Cover_Type'},
+                    'index': {'name': 'index_column'}
+                }
+
+            n_instances: int
+                The total number of instances that are going to be processed (can be an estimation).
+                This parameter is required and the only one from the above mentioned quadruplet,
+                which isn't deduced from the data.
+
+            n_classes: int
+                The total number of classes (labels).
+                When not provided, will be deduced from the provided data.
+                When multiple files are provided n_classes will be deduced based on the first file only.
+
+            max_memory_gb: int, optional
+                The maximum memory in GB that should be used.
+                When not provided, the server's total memory is used.
+                In any case only 80% of the provided memory or the server's total memory is considered.
+
+            optimized_for: str, either 'training' or 'cleaning'.
+                The main usage of the service.
+
+            chunk_size: int, optional
+                The number of instances to be used when creating a coreset node in the tree.
+                When defined, it will override the parameters of optimized_for, n_instances, n_classes and max_memory_gb.
+                chunk_size=0: nodes are created based on input chunks
+
+            coreset_size: int, optional
+                Represents the coreset size of each node in the coreset tree.
+                The coreset is constructed by sampling data instances from the dataset based on their calculated importance.
+                Since each instance may be sampled more than once, in practice, the actual size of the coreset is mostly
+                smaller than coreset_size.
+
+            sample_all: iterable, optional
+                Relevant for classification tasks only.
+                A list of classes for which all instances should be taken, instead of applying sampling.
+
+            coreset_params: CoresetParams or dict, optional
+                Coreset algorithm specific parameters.
+
+                For example:
+                coreset_params = {
+                    "class_weight": {"a": 0.5, "b": 0.5}
+                }
+
+            node_train_function: Callable, optional
+                method for training model at tree node level.
+
+            node_train_function_params: dict, optional
+                kwargs to be used when calling node_train_function.
+
+            node_metadata_func: callable, optional
+                A method for storing user meta data on each node.
+
+            working_directory: str, path, optional
+                Local directory where intermediate data is stored.
+
+            cache_dir: str, path, optional
+                For internal use when loading a saved service."""
     pass
 
-    def build_from_file(self, file_path: Union[Union[str, os.PathLike], Iterable[Union[str, os.PathLike]]], target_file_path: Union[Union[str, os.PathLike], Iterable[Union[str, os.PathLike]]]=None, *, reader_f=pd.read_csv, reader_kwargs: dict=None, chunk_size: int=None, coreset_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
+    def build_from_file(self, file_path: Union[Union[str, os.PathLike], Iterable[Union[str, os.PathLike]]], target_file_path: Union[Union[str, os.PathLike], Iterable[Union[str, os.PathLike]]]=None, *, reader_f=pd.read_csv, reader_kwargs: dict=None, chunk_size: int=None, chunk_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
         """
         Create a coreset tree based on data taken from local storage.
+        build functions may be called only once. To add more data to the coreset tree use one of
+        the build_partial functions.
+
         Parameters:
             file_path: file, list of files, directory, list of directories.
                 Path(s) to the place where data is stored.
@@ -24,7 +115,7 @@ class CoresetTreeService(CoresetServiceBase):
                 The number of instances used when creating a coreset node in the tree.
                 chunk_size=0: nodes are created based on input chunks
 
-            coreset_by: function, label, or list of labels, optional
+            chunk_by: function, label, or list of labels, optional
                 Split the data according to the provided key.
                 When provided, chunk_size input is ignored.
 
@@ -32,7 +123,7 @@ class CoresetTreeService(CoresetServiceBase):
             self"""
         pass
 
-    def partial_build_from_file(self, file_path: Union[Union[str, os.PathLike], Iterable[Union[str, os.PathLike]]], target_file_path: Union[Union[str, os.PathLike], Iterable[Union[str, os.PathLike]]]=None, *, reader_f=pd.read_csv, reader_kwargs: dict=None, chunk_size: int=None, coreset_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
+    def partial_build_from_file(self, file_path: Union[Union[str, os.PathLike], Iterable[Union[str, os.PathLike]]], target_file_path: Union[Union[str, os.PathLike], Iterable[Union[str, os.PathLike]]]=None, *, reader_f=pd.read_csv, reader_kwargs: dict=None, chunk_size: int=None, chunk_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
         """
         Add new samples to a coreset tree based on data taken from local storage.
         Parameters:
@@ -54,7 +145,7 @@ class CoresetTreeService(CoresetServiceBase):
                 The number of instances used when creating a coreset node in the tree.
                 chunk_size=0: nodes are created based on input chunks.
 
-            coreset_by: function, label, or list of labels, optional
+            chunk_by: function, label, or list of labels, optional
                 Split the data according to the provided key.
                 When provided, chunk_size input is ignored.
 
@@ -62,9 +153,11 @@ class CoresetTreeService(CoresetServiceBase):
             self"""
         pass
 
-    def build_from_df(self, datasets: Union[Iterator[pd.DataFrame], pd.DataFrame], target_datasets: Union[Iterator[pd.DataFrame], pd.DataFrame]=None, *, chunk_size=None, coreset_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
+    def build_from_df(self, datasets: Union[Iterator[pd.DataFrame], pd.DataFrame], target_datasets: Union[Iterator[pd.DataFrame], pd.DataFrame]=None, *, chunk_size=None, chunk_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
         """
         Create a coreset tree from pandas DataFrame(s).
+        build functions may be called only once. To add more data to the coreset tree use one of
+        the build_partial functions.
 
         Parameters:
             datasets: pandas DataFrame or a DataFrame iterator
@@ -78,7 +171,7 @@ class CoresetTreeService(CoresetServiceBase):
                 The number of instances used when creating a coreset node in the tree.
                 chunk_size=0: nodes are created based on input chunks.
 
-            coreset_by: function, label, or list of labels, optional
+            chunk_by: function, label, or list of labels, optional
                 Split the data according to the provided key.
                 When provided, chunk_size input is ignored.
 
@@ -86,7 +179,7 @@ class CoresetTreeService(CoresetServiceBase):
             self"""
         pass
 
-    def partial_build_from_df(self, datasets: Union[Iterator[pd.DataFrame], pd.DataFrame], target_datasets: Union[Iterator[pd.DataFrame], pd.DataFrame]=None, *, chunk_size=None, coreset_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
+    def partial_build_from_df(self, datasets: Union[Iterator[pd.DataFrame], pd.DataFrame], target_datasets: Union[Iterator[pd.DataFrame], pd.DataFrame]=None, *, chunk_size=None, chunk_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
         """
         Add new samples to a coreset tree based on the pandas DataFrame iterator.
 
@@ -102,7 +195,7 @@ class CoresetTreeService(CoresetServiceBase):
                 The number of instances used when creating a coreset node in the tree.
                 chunk_size=0: nodes are created based on input chunks.
 
-            coreset_by: function, label, or list of labels, optional
+            chunk_by: function, label, or list of labels, optional
                 Split the data according to the provided key.
                 When provided, chunk_size input is ignored.
 
@@ -110,9 +203,11 @@ class CoresetTreeService(CoresetServiceBase):
             self"""
         pass
 
-    def build(self, X: Union[Iterable, Iterable[Iterable]], y: Union[Iterable[Any], Iterable[Iterable[Any]]]=None, indices: Union[Iterable[Any], Iterable[Iterable[Any]]]=None, *, chunk_size=None, coreset_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
+    def build(self, X: Union[Iterable, Iterable[Iterable]], y: Union[Iterable[Any], Iterable[Iterable[Any]]]=None, indices: Union[Iterable[Any], Iterable[Iterable[Any]]]=None, *, chunk_size=None, chunk_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
         """
         Create a coreset tree from parameters X, y and indices.
+        build functions may be called only once. To add more data to the coreset tree use one of
+        the build_partial functions.
 
         Parameters:
             X: array like or iterator of arrays like
@@ -128,7 +223,7 @@ class CoresetTreeService(CoresetServiceBase):
                 The number of instances used when creating a coreset node in the tree.
                 chunk_size=0: nodes are created based on input chunks.
 
-            coreset_by: function, label, or list of labels, optional
+            chunk_by: function, label, or list of labels, optional
                 Split the data according to the provided key.
                 When provided, chunk_size input is ignored.
 
@@ -136,7 +231,7 @@ class CoresetTreeService(CoresetServiceBase):
             self"""
         pass
 
-    def partial_build(self, X: Union[Iterable, Iterable[Iterable]], y: Union[Iterable[Any], Iterable[Iterable[Any]]]=None, indices: Union[Iterable[Any], Iterable[Iterable[Any]]]=None, *, chunk_size=None, coreset_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
+    def partial_build(self, X: Union[Iterable, Iterable[Iterable]], y: Union[Iterable[Any], Iterable[Iterable[Any]]]=None, indices: Union[Iterable[Any], Iterable[Iterable[Any]]]=None, *, chunk_size=None, chunk_by: Union[Callable, str, list]=None) -> 'CoresetTreeService':
         """
         Add new samples to a coreset tree from parameters X, y and indices.
 
@@ -154,7 +249,7 @@ class CoresetTreeService(CoresetServiceBase):
                 The number of instances used when creating a coreset node in the tree.
                 chunk_size=0: nodes are created based on input chunks
 
-            coreset_by: function, label, or list of labels, optional
+            chunk_by: function, label, or list of labels, optional
                 Split the data according to the provided key.
                 When provided, chunk_size input is ignored.
 
@@ -212,7 +307,7 @@ class CoresetTreeService(CoresetServiceBase):
             CoresetTreeService object"""
         pass
 
-    def get_coreset(self, level=0, as_orig=False, with_index=False) -> dict:
+    def get_coreset(self, level=0, as_orig=False, with_index=False, inverse_class_weight: bool=True) -> dict:
         """
         Get tree's coreset data either in a processed format or in the original format.
         Use the level parameter to control the level of the tree from which samples will be returned.
@@ -230,6 +325,12 @@ class CoresetTreeService(CoresetServiceBase):
 
             with_index: boolean, optional, default False
                 Relevant only when as_orig=True. Should the returned data include the index column.
+
+            inverse_class_weight: boolean, default True
+                True - return weights / class_weights.
+                False - return weights as they are.
+                Relevant only for classification tasks and only if class_weight was passed in
+                the coreset_params when initializing the class.
 
         Returns:
             Dict:
@@ -527,4 +628,6 @@ class CoresetTreeService(CoresetServiceBase):
         pass
 
 class CoresetTreeServiceLG(CoresetTreeService):
+    """
+        Subclass of CoresetTreeService for Logistic Regression"""
     pass
