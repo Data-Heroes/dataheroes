@@ -1,0 +1,8 @@
+1. install YOLOv7 dependencies:
+  pip3 install -r utils/requirements.txt
+2. download COCO dataset:
+  ./utils/download_coco_dataset.sh <coco_dataset_folder_path>
+3.a run the feature extraction script:
+  python src/feature_extraction_object_detection_coco_yolov7_pytorch.py --root-dir <coco_dataset_folder_path> --export-dir <extracted_features_folder_path>
+3.b. when working with customized YOLOv7 architectures, the users can provide their own parameter file using the --model_param_location argument
+  python src/feature_extraction_object_detection_coco_yolov7_pytorch.py --root-dir <coco_dataset_folder_path> --export-dir <extracted_features_folder_path> --model_param_location <location_of_parameters_file>
