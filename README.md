@@ -1,7 +1,7 @@
 <div align="center" style="text-align: center">
 
 <p style="text-align: center">
-  <img align="center" src="https://github.com/Data-Heroes/dataheroes/blob/master/docs/resources/dataheroes_logo.png?raw=true" alt="DataHeroes">
+  <img align="center" src="https://github.com/Data-Heroes/dataheroes/blob/master/docs/resources/dateheroes_logo.png?raw=true" alt="DataHeroes">
 </p>
 
 
