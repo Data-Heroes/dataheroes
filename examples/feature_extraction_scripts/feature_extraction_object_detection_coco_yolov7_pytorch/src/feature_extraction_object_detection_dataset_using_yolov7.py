@@ -318,7 +318,9 @@ def shrink_extracted_features(
     """
     
     def build_pca_estimator(train_feature_dir : Path, num_train_splits : int):
-        pickled_ipca_filepath = export_dir / "pickles" / "ipca.pickle"
+        pickled_folder = export_dir / "pickles"
+        pickled_folder.mkdir(parents=True, exist_ok=True)
+        pickled_ipca_filepath = pickled_folder / "ipca.pickle"
         if pickled_ipca_filepath.is_file():
             # Load a pickled IncrementalPCA
             ipca = pickle.load(open(pickled_ipca_filepath,"rb"))
