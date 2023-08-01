@@ -1,11 +1,11 @@
 I - Extracting features from the COCO dataset:====================================================================================================================================================================================
-  1. Install YOLOv5 dependencies:
+  1. Install YOLOv8 dependencies:
     pip3 install -r requirements.txt
   2. Assuming the script is run from the root folder of the project, the following commands can be used to:
     a) run the feature extraction script:
-      python src/feature_extraction_object_detection_dataset_using_yolov5.py --root-dir <location_of_coco_dataset> --export-dir <folder_to_save_extracted_features_to>
-    b) when working with custom YOLOv5 models, the user can provide their own model parameters file, using the `--model_param_location` argument
-      python src/feature_extraction_object_detection_dataset_using_yolov5.py --root-dir <location_of_coco_dataset> --export-dir <folder_to_save_extracted_features_to> --model_param_location <location_of_model_parameters_file>
+      python src/feature_extraction_object_detection_dataset_using_yolov8.py --root-dir <location_of_coco_dataset> --export-dir <folder_to_save_extracted_features_to>
+    b) when working with custom YOLOv8 models, the user can provide their own model parameters file, using the `--model_param_location` argument
+      python src/feature_extraction_object_detection_dataset_using_yolov8.py --root-dir <location_of_coco_dataset> --export-dir <folder_to_save_extracted_features_to> --model_param_location <location_of_model_parameters_file>
 
 II - Adding support for a new dataset:============================================================================================================================================================================================
   1. Construct a sub-class of the Dataset type from src/datasets.py, for handling a new dataset; The following abstract methods need to be implemented:
@@ -26,5 +26,5 @@ II - Adding support for a new dataset:==========================================
     - get_image_path(split_type, image_id): returns the path to the image identified by the provided split and image_id
     - get_annotations_list(split_type, image_id): returns a list of ImageAnnotation records for the given split and image_id
     Note: An example dataset is provided for the COCO dataset in src/datasets.py
-  2. Replace the COCODataset object in the `main()` routine of feature_extraction_object_detection_dataset_using_yolov5.py script file with the new Dataset
+  2. Replace the COCODataset object in the `main()` routine of feature_extraction_object_detection_dataset_using_yolov8.py script file with the new Dataset
   3. Run the python script as described in the previous section
