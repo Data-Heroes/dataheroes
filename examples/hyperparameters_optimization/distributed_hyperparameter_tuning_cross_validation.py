@@ -13,7 +13,7 @@ import pandas as pd
 from pandas.core.series import Series
 import numpy as np
 
-from dataheroes import CoresetTreeServiceDTC
+from dataheroes import CoresetTreeServiceDTC, DataTuningParamsClassification
 
 from pyspark.sql import SparkSession
 from pyspark.broadcast import Broadcast
@@ -168,7 +168,7 @@ def main():
     service = CoresetTreeServiceDTC(optimized_for='training', 
                                     n_instances=n_instances,
                                     chunk_size=chunk_size,
-                                    coreset_size=coreset_size,
+                                    data_tuning_params=DataTuningParamsClassification(coreset_size=[coreset_size]),
                                     data_params=data_params)
 
     #Build the coreset tree on the train data.
